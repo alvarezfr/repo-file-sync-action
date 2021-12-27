@@ -96,13 +96,11 @@ class Git {
 		let email = GIT_EMAIL
 
 		if (email === undefined) {
-			if (IS_INSTALLATION_TOKEN) {
-				core.setFailed('When using an installation token you must provide GIT_EMAIL and GIT_USERNAME')
-				process.exit(1)
+			if (!IS_INSTALLATION_TOKEN) {
+				const { data } = await this.github.users.getAuthenticated()
+				email = data.email
+				username = data.login
 			}
-			const { data } = await this.github.users.getAuthenticated()
-			email = data.email
-			username = data.login
 		}
 
 		core.debug(`Setting git user to email: ${ email }, username: ${ username }`)
@@ -123,7 +121,7 @@ class Git {
 	async createPrBranch() {
 		const prefix = BRANCH_PREFIX.replace('SOURCE_REPO_NAME', GITHUB_REPOSITORY.split('/')[1])
 
-		let newBranch = path.join(prefix, this.repo.branch)
+		let newBranch = path.join(prefix, this.repo.branch).replace(/\\/g, '/')
 
 		if (OVERWRITE_EXISTING_PR === false) {
 			newBranch += `-${ Math.round((new Date()).getTime() / 1000) }`
