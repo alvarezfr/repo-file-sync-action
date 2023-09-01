@@ -506,6 +506,7 @@ export default class Git {
 		core.debug(`Creating a GitHub tree`)
 		let treeSha
 		try {
+			core.debug(`Tree: ${JSON.stringify(tree)}`)
 			const request = await this.github.git.createTree({
 				owner: this.repo.user,
 				repo: this.repo.name,
@@ -513,7 +514,9 @@ export default class Git {
 			})
 			treeSha = request.data.sha
 		} catch (error) {
-			error.message = `Cannot create a new GitHub Tree: ${ JSON.stringify(error) }`
+			
+			error.request = {} // DEBUG: temporal
+			error.message = `Cannot create a new GitHub Tree: ${ JSON.stringify(error) }` // DEBUG: temporal
 			throw error
 		}
 
