@@ -513,7 +513,7 @@ export default class Git {
 			})
 			treeSha = request.data.sha
 		} catch (error) {
-			error.message = `Cannot create a new GitHub Tree: ${ error.message }`
+			error.message = `Cannot create a new GitHub Tree: ${ JSON.stringify(error) }`
 			throw error
 		}
 
