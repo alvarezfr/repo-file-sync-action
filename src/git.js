@@ -515,7 +515,7 @@ export default class Git {
 			treeSha = request.data.sha
 		} catch (error) {
 			
-			error.request = {} // DEBUG: temporal
+			// error.request = {} // DEBUG: temporal
 			error.message = `Cannot create a new GitHub Tree: ${ JSON.stringify(error) }` // DEBUG: temporal
 			throw error
 		}
