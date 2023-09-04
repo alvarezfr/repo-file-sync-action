@@ -234,8 +234,6 @@ export default class Git {
 		)
 	}
 
-
-
 	// Returns a git tree parsed for the specified commit sha
 	async getTreeId(commitSha) {
 		core.debug(`Getting treeId for commit ${ commitSha }`)
