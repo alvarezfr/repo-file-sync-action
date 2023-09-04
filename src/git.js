@@ -234,24 +234,7 @@ export default class Git {
 		)
 	}
 
-	parseGitTree(treeRaw) {
-		const tree = []
-		for (const treeObject of treeRaw.split('\n')) {
-			const [ mode, type, sha ] = treeObject.split(/\s/)
-			const file = treeObject.split('\t')[1]
 
-			const treeEntry = {
-				mode,
-				type,
-				sha,
-				path: file
-			}
-
-			tree.push(treeEntry)
-		}
-
-		return tree
-	}
 
 	// Returns a git tree parsed for the specified commit sha
 	async getTreeId(commitSha) {
