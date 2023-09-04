@@ -26,7 +26,6 @@ const {
 } = config
 
 import { dedent, execCmd } from './helpers.js'
-import { debug } from 'console'
 
 export default class Git {
 	constructor() {
@@ -256,29 +255,29 @@ export default class Git {
 
 	// Returns a git tree parsed for the specified commit sha
 	async getTreeId(commitSha) {
-		core.debug(`Getting treeId for commit ${commitSha}`)
+		core.debug(`Getting treeId for commit ${ commitSha }`)
 		const output = (await execCmd(
 			`git cat-file -p ${ commitSha }`,
 			this.workingDir
 		)).split('\n')
 
-		const commitHeaders = output.slice(0, output.findIndex(e => e === ''))
-		const tree = commitHeaders.find(e => e.startsWith('tree' )).replace('tree ','')
+		const commitHeaders = output.slice(0, output.findIndex((e) => e === ''))
+		const tree = commitHeaders.find((e) => e.startsWith('tree')).replace('tree ', '')
 
 		return tree
 	}
 
 	async getTreeDiff(referenceTreeId, differenceTreeId) {
 		const output = await execCmd(
-			`git diff-tree ${referenceTreeId} ${differenceTreeId} -r`,
+			`git diff-tree ${ referenceTreeId } ${ differenceTreeId } -r`,
 			this.workingDir
 		)
 
 		const diff = []
 		for (const line of output.split('\n')) {
 			const splitted = line
-				.replace(/^:/,'')
-				.replace('\t',' ')
+				.replace(/^:/, '')
+				.replace('\t', ' ')
 				.split(' ')
 
 			const [
@@ -287,7 +286,7 @@ export default class Git {
 				newBlob,
 				previousBlob,
 				change,
-				path,
+				path
 			] = splitted
 
 			diff.push({
@@ -305,7 +304,7 @@ export default class Git {
 
 	// Creates the blob objects in GitHub for the files that are not in the previous commit only
 	async uploadGitHubBlob(blob) {
-		core.debug(`Uploading GitHub Blob for blob ${blob}`)
+		core.debug(`Uploading GitHub Blob for blob ${ blob }`)
 		const fileContent = await execCmd(
 			`git cat-file -p ${ blob }`,
 			this.workingDir
@@ -340,6 +339,7 @@ export default class Git {
 
 	// A wrapper for running all the flow to generate all the pending commits using the GitHub API
 	async createGithubVerifiedCommits() {
+		core.debug(`Creating Commits using GitHub API`)
 		const commits = await this.getCommitsToPush()
 
 		if (SKIP_PR === false) {
@@ -512,23 +512,23 @@ export default class Git {
 	}
 
 	async createGithubCommit(commitSha) {
-		const [treeId, parentTreeId, commitMessage] = await Promise.all([
-			this.getTreeId(`${commitSha}`),
-			this.getTreeId(`${commitSha}~1`),
+		const [ treeId, parentTreeId, commitMessage ] = await Promise.all([
+			this.getTreeId(`${ commitSha }`),
+			this.getTreeId(`${ commitSha }~1`),
 			this.getCommitMessage(commitSha)
 		])
 
 		const treeDiff = await this.getTreeDiff(treeId, parentTreeId)
 		core.debug(`Uploading the blobs to GitHub`)
 		const blobsToCreate = treeDiff
-			.filter(e => e.newMode !== '000000') // Do not upload the blob if it is being removed
+			.filter((e) => e.newMode !== '000000') // Do not upload the blob if it is being removed
 
-		await Promise.all(blobsToCreate.map(e => this.uploadGitHubBlob(e.newBlob)))
+		await Promise.all(blobsToCreate.map((e) => this.uploadGitHubBlob(e.newBlob)))
 		core.debug(`Creating a GitHub tree`)
-		const tree = treeDiff.map( e => {
+		const tree = treeDiff.map((e) => {
 			if (e.newMode === '000000') { // Set the sha to null to remove the file
 				e.newMode = e.previousMode
-				e.newBlob = null 
+				e.newBlob = null
 			}
 
 			const entry = {
@@ -547,7 +547,7 @@ export default class Git {
 				owner: this.repo.user,
 				repo: this.repo.name,
 				tree,
-				base_tree: parentTreeId,
+				base_tree: parentTreeId
 			})
 			treeSha = request.data.sha
 		} catch (error) {
